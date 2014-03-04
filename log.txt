@@ -1,0 +1,4 @@
+[2014-03-04 13:02:58,729 INFO] Start analyzing E:\01-MobileSec\01-Android\TestApks\0AA58468ED13063DF55FD3C579C22431.apk...
+[2014-03-04 13:02:59,163 INFO] Extract certificate information
+[2014-03-04 13:02:59,163 INFO] Certificate found : META-INF/KEJIKEJI.RSA
+[2014-03-04 13:02:59,204 INFO] Analysis for E:\01-MobileSec\01-Android\TestApks\0AA58468ED13063DF55FD3C579C22431.apk done
