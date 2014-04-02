@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-Created on 2014-3-2
+Created on 2014-4-2
 
 @author: Wenjun Hu
 '''
@@ -21,8 +21,6 @@ from application.application import *
 from util.util import *
 from permissions_map.permissions import PERMISSIONS
 
-
-
 # Logger
 LOG_FILE = r'log.txt'
 log = logging.getLogger('log')
@@ -34,11 +32,12 @@ log.addHandler(handler)
 
 
 class PermissionScanner():
-    def __init__(self, apk_file):
+    def __init__(self, apk_file, extract_string=False):
         self.__apk_file = apk_file
+        
         self.__apk = None
         self.__unclaimed_permissions = []
-        self.__certifiacte_info = {}
+
         
     def start_analysis(self):
         try:
@@ -61,26 +60,10 @@ class PermissionScanner():
             log.info('Start analyzing %s...' % self.__apk_file)
             self.__unclaimed_permissions = self.__analyze_apk(self.__apk)
             
-            # Get certificate information
-            log.info('Extract certificate information')
-            self.__certifiacte_info = get_certificate_information(self.__apk)
-            
             # Analysis done
             log.info('Analysis for %s done' % self.__apk_file)
         except Exception, ex:
             log.exception(ex)
-            
-    def get_unclaimed_permissions(self):
-        """
-            @rtype : a list of strings
-        """
-        return self.__unclaimed_permissions
-    
-    def get_certificate_info(self):
-        """
-            @rtype: a dictionary {'issuer':'' , 'subject':'' , 'serial_num':'', 'thumbprint':''}
-        """
-        return self.__certifiacte_info
 
         
     def __analyze_apk(self, apk, raw=False):
@@ -110,78 +93,74 @@ class PermissionScanner():
             dalvik_vm_format = DalvikVMFormat( open(dex_file, "rb").read() )
         else :
             dalvik_vm_format = DalvikVMFormat( dex_file )
-    
-    
+      
         # VMAnalysis
         vm_analysis = VMAnalysis( dalvik_vm_format )
-    
         dalvik_vm_format.set_vmanalysis( vm_analysis )
-        
+                
         return vm_analysis
     
     def __perform_analysis(self, apk, vm_analysis):
         # Get permissions and remove duplicate ones
-        permissions = set(apk.get_permissions())
+        manifest_permissions = set(apk.get_permissions())
         all_permissions = set(PERMISSIONS)
-        permissions = list(all_permissions & permissions)
+        manifest_permissions = list(all_permissions & manifest_permissions)
         
-        unclaimed_permissions = permissions
+        used_permissions = []
         
         # Get manifest intents
         manifest_intents = get_manifest_intents(apk)
         
-        for permission in permissions:
-            searched = False
-            try:
-                # Search method
-                class_method_tuple_list = get_api_list(permission)
-                if class_method_tuple_list:
-                    for class_method_tuple in class_method_tuple_list:
-                        searched = search_method(vm_analysis, class_method_tuple[0], class_method_tuple[1])
-                        if searched:
-                            unclaimed_permissions.remove(permission)
-                            break
+        # Search APIs
+        for tainted_package,_ in vm_analysis.tainted_packages.get_packages():
+            paths = tainted_package.get_methods()
+            class_name = tainted_package.get_name()
+            for path in paths:
+                api_tuple = (class_name, path.get_name())
+                permission = get_permission_by_api(api_tuple)
+                if permission:
+                    used_permissions.append(permission)
+            
+        # If need search string
+        if(len(used_permissions) != (len(manifest_permissions))):
+            # Search strings
+            for s, _ in vm_analysis.tainted_variables.get_strings() :
+                string_info = s.get_info()
+                permission = get_permission_by_intent(string_info)
+                if not permission:
+                    permission = get_permission_by_contentprovider(string_info)
+                if permission:
+                    used_permissions.append(permission)
                     
-                # Search intent
-                intent_list = get_intent_list(permission)
-                if intent_list:
-                    for intent in intent_list:
-                        searched = search_string(vm_analysis, intent) or \
-                            search_manifest_intent(intent, manifest_intents)
-                        if searched:
-                            unclaimed_permissions.remove(permission)
-                            break
+        # If need search manifest intents
+        if(len(used_permissions) != (len(manifest_permissions))):
+            for intent in manifest_intents:
+                permission = get_permission_by_intent(intent)
+                if permission:
+                    used_permissions.append(permission)
                     
-                
-                # Search contentprovider
-                contentprovider_list = get_contentprovider_list(permission)
-                if contentprovider_list:
-                    for contentprovider in contentprovider_list:
-                        searched = search_string(vm_analysis, contentprovider)
-                        if searched:
-                            unclaimed_permissions.remove(permission)
-                            break
-            except Exception,ex:
-                log.exception(ex)
-                continue
+        unclaimed_permissions = list(set(manifest_permissions) - set(used_permissions))
                 
         return unclaimed_permissions
+    
+    def get_unclaimed_permissions(self):
+        """
+            @rtype : a list of strings
+        """
+        return self.__unclaimed_permissions
 
 # Run
 if __name__ == '__main__':
-    import datetime 
-    current_time = datetime.datetime.now().time()
-    print current_time.isoformat()
+    test_apk = r'test.apk'
+    # Create PermissionScanner instance
     
-    permission_scanner = PermissionScanner(r'E:\01-MobileSec\01-Android\TestApks\0AA58468ED13063DF55FD3C579C22431.apk')
+    permission_scanner = PermissionScanner(test_apk, extract_string=True)
+    
+    # start analyze
     permission_scanner.start_analysis()
-    print permission_scanner.get_certificate_info()
-    print permission_scanner.get_unclaimed_permissions()
-    
-    current_time = datetime.datetime.now().time()
-    print current_time.isoformat()
-        
-        
+
+    # Get unclamed permissions
+    print 'unclaimed permissions:', permission_scanner.get_unclaimed_permissions()
         
         
             

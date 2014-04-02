@@ -3283,6 +3283,7 @@ DALVIK_OPCODES_FORMAT = {
   0xfc : [Instruction10x, [ "nop" ] ],
   0xfd : [Instruction10x, [ "nop" ] ],
   0xfe : [Instruction10x, [ "nop" ] ],
+  0xff : [Instruction10x, [ "nop" ] ],
 }
 
 def get_instruction(cm, op_value, buff) :
@@ -4214,13 +4215,13 @@ class DalvikVMFormat(bytecode._Bytecode) :
                         return j
         return None
 
-    def get_class_manager(self) :
-        """
-            Return directly the class manager
-
-            @rtype : L{ClassManager}
-        """
-        return self.map_list.get_class_manager()
+#    def get_class_manager(self) :
+#        """
+#            Return directly the class manager
+#
+#            @rtype : L{ClassManager}
+#        """
+#        return self.map_list.get_class_manager()
 
     def get_strings(self) :
         """

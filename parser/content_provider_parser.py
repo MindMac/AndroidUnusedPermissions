@@ -40,11 +40,10 @@ src_file_obj.close()
 dst_file_obj.write('CONTENTPROVIDER_PERMISSION_MAP = {\n')
 
 for permission, contentproviders in contentprovider_permission_map.items():
+    contentproviders = list(set(contentproviders))
     if permission != 'pathPrefix' and permission != 'pathPattern':
-        dst_file_obj.write("\t'%s' : [ \n" % permission)
         for contentprovider in contentproviders:
-            dst_file_obj.write("\t\t'%s', \n" % contentprovider)
-        dst_file_obj.write('\t], \n')
+            dst_file_obj.write("\t'%s' : '%s', \n" % (contentprovider, permission))
         
 dst_file_obj.write('}')
 dst_file_obj.close()

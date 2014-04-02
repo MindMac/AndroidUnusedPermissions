@@ -40,10 +40,9 @@ src_file_obj.close()
 dst_file_obj.write('INTENT_PERMISSION_MAP = {\n')
 
 for permission, intents in intent_permission_map.items():
-    dst_file_obj.write("\t'%s' : [ \n" % permission)
+    intents = list(set(intents))
     for intent in intents:
-        dst_file_obj.write("\t\t'%s', \n" % intent)
-    dst_file_obj.write('\t], \n')
+        dst_file_obj.write("\t'%s' : '%s', \n" % (intent, permission))
         
 dst_file_obj.write('}')
 dst_file_obj.close()

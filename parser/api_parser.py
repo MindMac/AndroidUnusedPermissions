@@ -25,16 +25,15 @@ dst_file_obj.write('#API Permission Map\n\n')
 dst_file_obj.write('API_PERMISSION_MAP = {\n')
 
 src_line = src_file_obj.readline()
-permission_count = 0
+
+permission_api_map = {}
 
 while src_line:
     if src_line.startswith('Permission'):
-        permission_count += 1
-        if permission_count > 1:
-            dst_file_obj.write('\t],\n')
+
         permission = src_line.split(':')[-1]
         permission = permission.strip()
-        dst_file_obj.write("\t'%s':[\n" % (permission))
+        permission_api_map[permission] = []
     elif src_line.startswith('<'):
         res = api_pattern.findall(src_line)
         if res:
@@ -42,11 +41,16 @@ while src_line:
             class_name = class_name.replace('.', '/')
             class_name = 'L%s' % class_name
             method_name = res[0][1]
-            dst_file_obj.write("\t\t('%s', '%s'), \n" %(class_name, method_name))
+            permission_api_map[permission].append((class_name, method_name))
             
     src_line = src_file_obj.readline()
 
-dst_file_obj.write('\t],\n')
+for permission, api_tuple_list in permission_api_map.items():
+    api_tuple_list = list(set(api_tuple_list))
+
+    for api_tuple in api_tuple_list:
+        dst_file_obj.write("\t('%s;', '%s') : '%s' ,\n" % (api_tuple[0], api_tuple[1], permission))
+        
 dst_file_obj.write('}')
 src_file_obj.close()  
 dst_file_obj.close()
