@@ -11,8 +11,10 @@ import re
 
 # Parse API Permission map from PScount to generate Python dictionary
 
-src_file = r'../permissions/api.txt'
+src_file = r'../raw_permissions/api.txt'
 dst_file = r'../permissions_map/api.py'
+src_file = r'../raw_permissions/all_api.txt'
+dst_file = r'../permissions_map/all_api.py'
 api_pattern = re.compile(r'\<(.+):\s+.+\s+(\w+)')
 
 src_file_obj = open(src_file, 'r')

@@ -4,6 +4,7 @@ encoding//parser/api_parser.py=utf-8
 encoding//parser/content_provider_parser.py=utf-8
 encoding//parser/intent_parser.py=utf-8
 encoding//parser/permissions.py=utf-8
+encoding//permissions_map/all_api.py=utf-8
 encoding//permissions_map/api.py=utf-8
 encoding//permissions_map/contentprovider.py=utf-8
 encoding//permissions_map/intent.py=utf-8

@@ -9,7 +9,7 @@ Created on 2014-3-2
 
 # Parse API Permission map from PScount to generate Python dictionary
 
-src_file = r'../permissions/intent.txt'
+src_file = r'../raw_permissions/intent.txt'
 dst_file = r'../permissions_map/intent.py'
 
 src_file_obj = open(src_file, 'r')

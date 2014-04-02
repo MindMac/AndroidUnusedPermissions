@@ -9,7 +9,7 @@ Created on 2014-3-2
 
 # Parse API Permission map from PScount to generate Python dictionary
 
-src_file = r'../permissions/contentprovider.txt'
+src_file = r'../raw_permissions/contentprovider.txt'
 dst_file = r'../permissions_map/contentprovider.py'
 
 src_file_obj = open(src_file, 'r')
